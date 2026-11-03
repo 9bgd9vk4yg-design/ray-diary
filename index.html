@@ -1,59 +1,74 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ray 日記</title>
 <style>
-:root{--bg:#f8f3ff;--card:#fffaff;--ink:#51445f;--pink:#f4cfe2;--purple:#b9a6df}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#f8f3ff,#fff4f8);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}
-.wrap{max-width:560px;margin:auto;padding:18px}
-header{text-align:center;padding:14px 0 18px}.logo{font-size:28px;font-weight:800}.sub{font-size:13px;color:#8d7d9c;margin-top:5px}
-.card{background:#fffbff;border:1px solid #eadff3;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 5px 18px #bba8d51a}
-h2{font-size:16px;margin:0 0 12px}label{font-size:13px;display:block;margin:10px 0 6px}
-input,textarea{width:100%;border:1px solid #e4d8ee;border-radius:12px;padding:12px;background:#fff;font:inherit;color:var(--ink)}
-textarea{min-height:140px;resize:vertical;line-height:1.6}
-button{border:0;border-radius:13px;padding:12px 15px;font-weight:700;font-size:14px;cursor:pointer}
-.primary{background:linear-gradient(90deg,#d9c8f2,#f4cfe2);color:#51445f;width:100%;margin-top:10px}
-.secondary{background:#eee8f7;color:#6d5c85}
+:root{--bg:#f8f3ff;--card:#fffaff;--ink:#51445f;--purple:#b85acb;--light:#eee6fa;--line:#e6d9f2}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#f5efff,#fff8fc);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:520px;margin:auto;padding:18px 14px 34px}
+header{display:flex;align-items:center;justify-content:space-between;margin:5px 4px 18px}
+h1{font-size:24px;margin:0;font-weight:800} .sub{font-size:12px;color:#9585a5;margin-top:5px}
+button{border:0;border-radius:14px;padding:12px 15px;font-weight:700;font-size:14px;cursor:pointer}
+.save{background:#eee4f8;color:#80618f}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tab{flex:1;background:#eee8f7;color:#806c92}.tab.active{background:var(--purple);color:white}
+.card{background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 5px 18px #d9c9e522}
+h2{font-size:16px;margin:0 0 12px}
+.bubble{background:#f5effb;border:1px solid #e8dcf4;border-radius:16px;padding:12px;margin-bottom:12px;font-size:14px;line-height:1.6}
+label{display:block;font-size:12px;color:#9684a5;margin:9px 0 6px}
+textarea{width:100%;border:1px solid #e4d8ef;border-radius:14px;background:#fffdfd;padding:12px;font:14px/1.6 inherit;color:var(--ink);resize:vertical;min-height:105px;outline-color:#c58bd4}
+.primary{width:100%;background:linear-gradient(90deg,#b95acb,#9d56c6);color:white;margin-top:10px}
+.secondary{background:#eee5f7;color:#7b5a8d}
+.note{font-size:11px;color:#9b8ba8;line-height:1.6;margin-top:10px}
+.hidden{display:none!important}
+.msg{white-space:pre-wrap;background:#faf6ff;border:1px solid #eee4f6;border-radius:14px;padding:11px;margin:8px 0;font-size:14px}
+.entry{border-bottom:1px solid #eee5f5;padding:12px 0;white-space:pre-wrap}
+.entry:last-child{border:0}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row button{flex:1}
-.tip{font-size:12px;color:#8e7e9b;line-height:1.6}
-#saved{white-space:pre-wrap;line-height:1.6;font-size:14px}
+#toast{font-size:12px;text-align:center;color:#8b5ca1;min-height:18px;margin-top:8px}
 </style>
 </head>
-<body><div class="wrap">
-<header><div class="logo">🌷 Ray 日記</div><div class="sub">把聊天整理成溫柔的日常紀錄</div></header>
-<section class="card">
-<h2>📝 新增日記</h2>
-<label>日記標題</label><input id="title" placeholder="例如：今天的心情／生活紀錄">
-<label>貼上聊天內容</label><textarea id="chat" placeholder="把 ChatGPT 聊天內容貼在這裡……"></textarea>
-<div class="row"><button class="secondary" onclick="copyChat()">📋 一鍵複製聊天內容</button><button class="secondary" onclick="clearInput()">清空</button></div>
-<button class="primary" onclick="makePrompt()">✨ 產生「整理成 Ray 日記」指令</button>
-<p class="tip">按下後會複製整理指令與聊天內容；再到 ChatGPT 貼上即可整理。</p>
+<body>
+<div class="wrap">
+<header><div><h1>🌙 Ray 日記</h1><div class="sub">把每天的小故事，溫柔收進起點 ♡</div></div><button class="save" id="backup">💾 備份</button></header>
+<div class="tabs"><button class="tab active" id="chatTab">💬 聊天</button><button class="tab" id="diaryTab">📖 日記</button></div>
+<section id="chatPage">
+<div class="card">
+<h2>今天想跟 Ray 說什麼？</h2>
+<div class="bubble">嗨～今天過得怎麼樣？不管開心或疲累，都可以慢慢跟我說。🌷</div>
+<label for="input">你的訊息</label>
+<textarea id="input" placeholder="例如：今天陪先生回診，回家後煮了晚餐……"></textarea>
+<button class="primary" id="send">送出聊天</button>
+<div class="note">聊天內容會保存在這台裝置。每天聊完，按下「一鍵複製今日聊天」即可貼到 ChatGPT，請 Ray 幫你整理成日記。</div>
+</div>
+<div class="card"><h2>✨ 今日聊天紀錄</h2><div id="messages"><div class="note">今天的聊天會顯示在這裡。</div></div>
+<button class="primary" id="copy">📋 一鍵複製今日聊天</button>
+<button class="secondary" style="width:100%;margin-top:8px" id="clear">清空今日聊天</button><div id="toast"></div>
+</div>
+<div class="card"><h2>✨ 今日小提醒</h2><div class="note">每天聊完，可以請 Ray：「幫我把今天聊天整理成日記」，再到「日記」保存。</div></div>
 </section>
-<section class="card">
-<h2>💗 整理指令</h2><textarea id="prompt" readonly>請把以下聊天內容整理成「Ray 日記」：保留重要事情、日期、心情與待辦；用繁體中文、自然溫柔的口吻，分成「今日紀錄、心情、重要事項、明日待辦」，不要自行添加沒有提到的內容。</textarea>
-<button class="primary" onclick="copyPrompt()">📋 複製整理指令</button>
-</section>
-<section class="card">
-<h2>📚 日記保存</h2><div class="row"><button class="secondary" onclick="saveDiary()">💾 保存這篇日記</button><button class="secondary" onclick="exportBackup()">⬇️ 匯出備份</button><button class="secondary" onclick="document.getElementById('restore').click()">⬆️ 匯入備份</button></div>
-<input id="restore" type="file" accept="application/json" style="display:none" onchange="importBackup(event)">
-<label>已保存的日記</label><div id="saved">目前尚未保存日記。</div>
+<section id="diaryPage" class="hidden">
+<div class="card"><h2>📖 寫下今天的日記</h2><label for="diaryText">日記內容</label><textarea id="diaryText" placeholder="把 ChatGPT 整理好的日記貼在這裡……"></textarea><button class="primary" id="saveDiary">保存日記</button></div>
+<div class="card"><h2>🗓️ 日記收藏</h2><div id="entries"><div class="note">保存的日記會出現在這裡。</div></div></div>
 </section>
 </div>
 <script>
-const KEY='rayDiaryEntries';
-function entries(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}}
-function copyText(t){if(!t){alert('請先輸入聊天內容');return}navigator.clipboard.writeText(t).then(()=>alert('已複製！可以貼到 ChatGPT。')).catch(()=>{const x=document.createElement('textarea');x.value=t;document.body.appendChild(x);x.select();document.execCommand('copy');x.remove();alert('已複製！')})}
-function copyChat(){copyText(document.getElementById('chat').value)}
-function copyPrompt(){copyText(document.getElementById('prompt').value)}
-function makePrompt(){const c=document.getElementById('chat').value.trim();if(!c){alert('請先貼上聊天內容');return}copyText(document.getElementById('prompt').value+'\\n\\n聊天內容：\\n'+c)}
-function clearInput(){document.getElementById('chat').value='';document.getElementById('title').value=''}
-function saveDiary(){let c=document.getElementById('chat').value.trim();if(!c){alert('請先貼上或輸入日記內容');return}let a=entries();a.unshift({title:document.getElementById('title').value||'Ray日記 '+new Date().toLocaleDateString('zh-TW'),date:new Date().toISOString(),content:c});localStorage.setItem(KEY,JSON.stringify(a));render();alert('日記已保存')}
-function render(){let a=entries();document.getElementById('saved').innerHTML=a.length?a.map((x,i)=>`<div style="padding:10px 0;border-bottom:1px solid #eee"><b>${esc(x.title)}</b><div class="tip">${new Date(x.date).toLocaleString('zh-TW')}</div><p>${esc(x.content).replace(/\\n/g,'<br>')}</p><button class="secondary" onclick="loadEntry(${i})">載入</button> <button class="secondary" onclick="deleteEntry(${i})">刪除</button></div>`).join(''):'目前尚未保存日記。'}
+const $=id=>document.getElementById(id);
+const today=()=>new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'});
+let chats=JSON.parse(localStorage.getItem('rayChats')||'{}');
+let diaries=JSON.parse(localStorage.getItem('rayDiaries')||'[]');
+function persist(){localStorage.setItem('rayChats',JSON.stringify(chats));localStorage.setItem('rayDiaries',JSON.stringify(diaries))}
+function renderChats(){let arr=chats[today()]||[];$('messages').innerHTML=arr.length?arr.map((m,i)=>`<div class="msg"><b>我 ${i+1}</b><br>${esc(m)}</div>`).join(''):'<div class="note">今天的聊天會顯示在這裡。</div>'}
+function renderDiaries(){$('entries').innerHTML=diaries.length?diaries.slice().reverse().map(d=>`<div class="entry"><b>📅 ${esc(d.date)}</b><br>${esc(d.text)}</div>`).join(''):'<div class="note">保存的日記會出現在這裡。</div>'}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function loadEntry(i){let x=entries()[i];document.getElementById('title').value=x.title;document.getElementById('chat').value=x.content;window.scrollTo({top:0,behavior:'smooth'})}
-function deleteEntry(i){if(confirm('確定刪除這篇日記？')){let a=entries();a.splice(i,1);localStorage.setItem(KEY,JSON.stringify(a));render()}}
-function exportBackup(){let blob=new Blob([JSON.stringify({version:1,entries:entries()},null,2)],{type:'application/json'});let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Ray日記備份.json';a.click();URL.revokeObjectURL(url)}
-function importBackup(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!Array.isArray(d.entries))throw 0;if(confirm('匯入會合併到現有日記，確定嗎？')){localStorage.setItem(KEY,JSON.stringify([...d.entries,...entries()]));render();alert('備份匯入完成')}}catch(err){alert('備份檔格式不正確')}};r.readAsText(f);e.target.value=''}
-render();
-</script></body></html>
+$('send').onclick=()=>{let t=$('input').value.trim();if(!t)return;(chats[today()]||(chats[today()]=[])).push(t);$('input').value='';persist();renderChats()}
+$('copy').onclick=async()=>{let arr=chats[today()]||[];if(!arr.length){$('toast').textContent='今天還沒有聊天內容喔。';return}let text=`Ray 日記｜${today()} 今日聊天\\n\\n`+arr.map((m,i)=>`【第${i+1}段】\\n${m}`).join('\\n\\n');try{await navigator.clipboard.writeText(text);$('toast').textContent='✅ 已複製！現在可以貼到 ChatGPT 了。'}catch(e){let ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();$('toast').textContent='✅ 已複製！現在可以貼到 ChatGPT 了。'}}
+$('clear').onclick=()=>{if(confirm('確定清空今天的聊天嗎？')){chats[today()]=[];persist();renderChats();$('toast').textContent='今日聊天已清空。'}}
+$('saveDiary').onclick=()=>{let t=$('diaryText').value.trim();if(!t)return;diaries.push({date:today(),text:t});$('diaryText').value='';persist();renderDiaries();alert('日記已保存 💗')}
+$('chatTab').onclick=()=>{ $('chatPage').classList.remove('hidden');$('diaryPage').classList.add('hidden');$('chatTab').classList.add('active');$('diaryTab').classList.remove('active') }
+$('diaryTab').onclick=()=>{ $('diaryPage').classList.remove('hidden');$('chatPage').classList.add('hidden');$('diaryTab').classList.add('active');$('chatTab').classList.remove('active');renderDiaries() }
+$('backup').onclick=()=>{let blob=new Blob([JSON.stringify({chats,diaries},null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Ray日記備份.json';a.click();URL.revokeObjectURL(a.href)}
+renderChats();renderDiaries();
+</script>
+</body></html>
